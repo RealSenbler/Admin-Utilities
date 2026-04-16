@@ -1,0 +1,12 @@
+name: AdminUtilities
+version: '$version'
+
+main: org.senbler.adminUtilities.AdminUtilities
+api-version: '26.1.2'
+load: POSTWORLD
+
+commands:
+  adminutilities:
+    description: Opens the main menu.
+    usage: /adminutilities
+    aliases: [adminutil, au, test]
