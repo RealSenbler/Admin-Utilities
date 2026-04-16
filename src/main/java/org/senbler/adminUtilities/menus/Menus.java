@@ -6,10 +6,7 @@ import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.format.NamedTextColor;
 import net.kyori.adventure.text.format.TextDecoration;
 import net.kyori.adventure.text.serializer.plain.PlainTextComponentSerializer;
-import org.bukkit.Bukkit;
-import org.bukkit.Material;
-import org.bukkit.OfflinePlayer;
-import org.bukkit.Sound;
+import org.bukkit.*;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
@@ -54,7 +51,10 @@ public class Menus implements Listener {
                 mainMenu.setItem(10, mainMenu.createItem(Material.SKELETON_SKULL, "§eWhitelisted Players", "§7Opens a menu of whitelisted players."), (event, _) -> {
                     openGUI((Player) event.getWhoClicked(), "whitelist_menu");
                 });
-                mainMenu.setItem(11, mainMenu.createItem(Material.CRAFTING_TABLE, "§eItem Creator", "§7Opens an item creator menu.", "§7Currently implemented features:", "§7- Name", "§7- Lore", "§7- Glow", "§7- Material"), (event, _) -> {
+                mainMenu.setItem(11, mainMenu.createItem(Material.ANVIL, "§eBanned Players", "§7Opens a menu of banned players."), (event, _) -> {
+                    openGUI((Player) event.getWhoClicked(), "ban_menu");
+                });
+                mainMenu.setItem(12, mainMenu.createItem(Material.CRAFTING_TABLE, "§eItem Creator", "§7Opens an item creator menu.", "§7Currently implemented features:", "§7- Name", "§7- Lore", "§7- Glow", "§7- Material"), (event, _) -> {
                     openGUI((Player) event.getWhoClicked(), "item_creator");
                 });
             });
@@ -76,6 +76,10 @@ public class Menus implements Listener {
                     gui.setItem(49, gui.createItem(Material.BARRIER, "§cExit", "§7Click to exit the menu."), (event, _) -> {
                         event.getWhoClicked().closeInventory();
 
+                    });
+                    gui.setItem(48, gui.createItem(Material.ARROW, "§aBack", null), (event, _) -> {
+                        Player player = (Player) event.getWhoClicked();
+                        openGUI(player, "main_menu");
                     });
                     // Plus Button
                         ItemStack plusButton = new ItemStack(Material.PLAYER_HEAD, 1);
@@ -268,7 +272,23 @@ public class Menus implements Listener {
                         AdminUtilities.sendMessage(player, "The lore is already empty!");
                     }
                 });
-                itemCreator.setItem(42, itemCreator.createItem(Material.CHEST, "§aGive item", "§7Click to giveyourself this item."), (event, _) -> {
+                itemCreator.setItem(22, itemCreator.createItem(Material.FLINT_AND_STEEL, "§eClear Lore", "§7Clears every line of the lore."), (event, _) -> {
+                    Player player = (Player) event.getWhoClicked();
+                    if (lore.size() > 0) {
+                        lore.clear();
+                        ItemStack tempcustomItem = new ItemStack(itemMaterial[0], amount);
+                        ItemMeta tempcustomItemMeta = customItem.getItemMeta();
+                        tempcustomItemMeta.setDisplayName(title[0]);
+                        tempcustomItemMeta.setLore(lore);
+                        tempcustomItemMeta.setEnchantmentGlintOverride(glow[0]);
+                        tempcustomItem.setItemMeta(tempcustomItemMeta);
+                        itemCreator.setItem(24, customItem, null);
+                        openGUI(player, "item_creator");
+                    } else {
+                        AdminUtilities.sendMessage(player, "The lore is already empty!");
+                    }
+                });
+                itemCreator.setItem(42, itemCreator.createItem(Material.CHEST, "§aGive item", "§7Click to give yourself this item."), (event, _) -> {
                     Player player = (Player) event.getWhoClicked();
                     ItemStack tempcustomItem = new ItemStack(itemMaterial[0], amount);
                     ItemMeta tempcustomItemMeta = customItem.getItemMeta();
@@ -280,6 +300,87 @@ public class Menus implements Listener {
                 });
             });
             guis.put("item_creator", itemCreator);
+        }
+
+        //Bans Menu
+        {
+            GUI bansMenu = new GUI("§cBans", 6);
+            bansMenu.setOnCreate((player2, gui) -> {
+                if (Bukkit.getBannedPlayers().isEmpty()) {
+                    AdminUtilities.sendMessage(player2, "Reminder: There are no banned players.");
+                    player2.closeInventory();
+                }
+                if (!(Bukkit.getWhitelistedPlayers().size() > 28)) {
+                    AtomicInteger i = new AtomicInteger(10);
+                    gui.nuke();
+                    gui.fillEdge(null);
+                    gui.setItem(49, gui.createItem(Material.BARRIER, "§cExit", "§7Click to exit the menu."), (event, _) -> {
+                        event.getWhoClicked().closeInventory();
+
+                    });
+                    gui.setItem(48, gui.createItem(Material.ARROW, "§aBack", null), (event, _) -> {
+                        Player player = (Player) event.getWhoClicked();
+                        openGUI(player, "main_menu");
+                    });
+//                    // Plus Button
+//                    ItemStack plusButton = new ItemStack(Material.PLAYER_HEAD, 1);
+//                    SkullMeta skullMeta = (SkullMeta) plusButton.getItemMeta();
+//                    PlayerProfile playerProfile = Bukkit.createProfile("plusbutton");
+//                    PlayerTextures textures = playerProfile.getTextures();
+//                    try {
+//                        textures.setSkin(new URL("http://textures.minecraft.net/texture/177bb66fc73a97cefcb3a4bfdccb12281f44dd326ccd0ff39d47e985bfeff343"));
+//                    } catch (MalformedURLException e) {
+//                        throw new RuntimeException(e);
+//                    }
+//                    playerProfile.setTextures(textures);
+//                    skullMeta.setPlayerProfile(playerProfile);
+//                    skullMeta.setDisplayName("§aAdd a player to the whitelist");
+//                    skullMeta.setLore(Arrays.asList("§7Click to add a new player to the whitelist."));
+//                    plusButton.setItemMeta(skullMeta);
+//                    gui.setItem(51, plusButton, (event, _) -> {
+//                        Player player = (Player) event.getWhoClicked();
+//                        player.closeInventory();
+//                        player.sendTitle("§a§lInput", "§7Enter the username in chat", 5, 80, 5);
+//                        awaitingInput.put(player.getUniqueId(), input -> {
+//                            AdminUtilities.sendMessage(player, "§a" + input + " was added to the whitelist!");
+//                            OfflinePlayer pl = Bukkit.getOfflinePlayer(input);
+//                            if (pl != null && !pl.isWhitelisted()) {
+//                                pl.setWhitelisted(true);
+//                            }
+//                            openGUI(player, "ban_menu");
+//                        });
+//                    });
+
+                    Bukkit.getBannedPlayers().stream().forEach(offlinePlayer -> {
+                        ItemStack item = new ItemStack(Material.PLAYER_HEAD, 1);
+                        SkullMeta meta = (SkullMeta)item.getItemMeta();
+                        PlayerProfile profile = offlinePlayer.getPlayerProfile();
+                        if (!profile.isComplete()) {
+                            profile.complete();
+                        }
+                        meta.setLore(Arrays.asList("§7Ban reason: §c" + ((Bukkit.getBanList(BanList.Type.NAME).getBanEntry(offlinePlayer.getName()).getReason()) == null ? "none" : (Bukkit.getBanList(BanList.Type.NAME).getBanEntry(offlinePlayer.getName()).getReason())), "§7Right click to §aunban§7 this player."));
+                        meta.displayName(Component.text(offlinePlayer.getName(), NamedTextColor.DARK_AQUA).decoration(TextDecoration.ITALIC, false));
+                        meta.setOwningPlayer(offlinePlayer);
+                        item.setItemMeta(meta);
+                        bansMenu.setItem(i.get(), item, (event, _) -> {
+                            if (!event.getClick().isRightClick()) {
+                                return;
+                            }
+                            Bukkit.getBanList(BanList.Type.NAME).pardon(offlinePlayer.getName());
+                            AdminUtilities.sendMessage((Player)event.getWhoClicked(), "§ePlayer unbanned!");
+                            Bukkit.getScheduler().runTask(AdminUtilities.getPlugin(), () -> {
+                                //whitelistMenu.open((Player)event.getWhoClicked());
+                                openGUI((Player)event.getWhoClicked(), "ban_menu");
+                            });
+                            //whitelistMenu.open((Player)event.getWhoClicked());
+                        });
+                        i.getAndIncrement();
+                    });
+                } else {
+                    AdminUtilities.sendMessage(player2, "This feature is not yet made for ban list sizes over 28 :( sorry!");
+                }
+            });
+            guis.put("ban_menu", bansMenu);
         }
     }
 
