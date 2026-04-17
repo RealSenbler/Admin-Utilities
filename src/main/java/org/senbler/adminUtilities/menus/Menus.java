@@ -46,6 +46,7 @@ public class Menus implements Listener {
             mainMenu.setOnCreate((_, _) -> {
                 mainMenu.fillEdge(null);
                 mainMenu.setItem(22, mainMenu.createItem(Material.BARRIER, "§cExit", "§7Click to exit the menu."), (event, _) -> event.getWhoClicked().closeInventory());
+                mainMenu.setItem(21, mainMenu.createItem(Material.COMPARATOR, "§ePlugin Settings", "§7Opens the plugin settings menu."), (event, _) -> openGUI((Player)event.getWhoClicked(), "settings_menu"));
                 mainMenu.setItem(10, mainMenu.createItem(Material.SKELETON_SKULL, "§eWhitelisted Players", "§7Opens a menu of whitelisted players."), (event, _) -> openGUI((Player) event.getWhoClicked(), "whitelist_menu"));
                 mainMenu.setItem(11, mainMenu.createItem(Material.ANVIL, "§eBanned Players", "§7Opens a menu of banned players."), (event, _) -> openGUI((Player) event.getWhoClicked(), "ban_menu"));
                 mainMenu.setItem(12, mainMenu.createItem(Material.CRAFTING_TABLE, "§eItem Creator", "§7Opens an item creator menu.", "§7Currently implemented features:", "§7- Name", "§7- Lore", "§7- Glow", "§7- Material"), (event, _) -> openGUI((Player) event.getWhoClicked(), "item_creator"));
@@ -265,7 +266,6 @@ public class Menus implements Listener {
                         Player player = (Player) event.getWhoClicked();
                         openGUI(player, "main_menu");
                     });
-
                     Bukkit.getBannedPlayers().stream().forEach(offlinePlayer -> {
                         ItemStack item = new ItemStack(Material.PLAYER_HEAD, 1);
                         SkullMeta meta = (SkullMeta)item.getItemMeta();
@@ -296,6 +296,62 @@ public class Menus implements Listener {
                 }
             });
             guis.put("ban_menu", bansMenu);
+        }
+
+        // Settings menu
+        {
+            GUI settingsMenu = new GUI("§7Plugin Settings", 3);
+            settingsMenu.setOnCreate((player2, gui) -> {
+                settingsMenu.fillEdge(null);
+                settingsMenu.setItem(22, settingsMenu.createItem(Material.BARRIER, "§cClose", null), (event, _) -> {
+                    event.getWhoClicked().closeInventory();
+                });
+                settingsMenu.setItem(21, settingsMenu.createItem(Material.ARROW, "§aBack", null), (event, _) -> {
+                    openGUI((Player)event.getWhoClicked(), "main_menu");
+                });
+                settingsMenu.setItem(10, settingsMenu.createItem(Material.ICE, "§bFreeze §7Settings", "§7Settings for the freeze menu."), (event, _) -> {
+                    openGUI((Player)event.getWhoClicked(), "freeze_settings");
+                });
+            });
+            guis.put("settings_menu", settingsMenu);
+        }
+        // Freeze Settings
+        {
+            GUI freezeSettings = new GUI("§bFreeze §7Settings", 3);
+            freezeSettings.setOnCreate((player2, gui) -> {
+                freezeSettings.fillEdge(null);
+                freezeSettings.setItem(22, freezeSettings.createItem(Material.BARRIER, "§cClose", null), (event, _) -> {
+                    event.getWhoClicked().closeInventory();
+                });
+                freezeSettings.setItem(21, freezeSettings.createItem(Material.ARROW, "§aBack", null), (event, _) -> {
+                    openGUI((Player)event.getWhoClicked(), "settings_menu");
+                });
+                String setting1 = (AdminUtilities.getPlugin().getConfig().getBoolean("freeze-settings.allow-interact")) ? "§aALLOWED" : "§cBLOCKED";
+                freezeSettings.setItem(10, freezeSettings.createItem(Material.GRASS_BLOCK, "§eAllow Block Interactions", "§7This setting allows the frozen player to", "§7interact with blocks.", "", "§7This includes breaking, placing, using, etc.", "", "§7Status: " + setting1), (event, _) -> {
+                    boolean settingValue = AdminUtilities.getPlugin().getConfig().getBoolean("freeze-settings.allow-interact");
+                    AdminUtilities.getPlugin().getConfig().set("freeze-settings.allow-interact", !settingValue);
+                    openGUI((Player)event.getWhoClicked(), "freeze_settings");
+                });
+                String setting2 = (AdminUtilities.getPlugin().getConfig().getBoolean("freeze-settings.allow-chat")) ? "§aALLOWED" : "§cBLOCKED";
+                freezeSettings.setItem(11, freezeSettings.createItem(Material.OAK_SIGN, "§eAllow Player Chat", "§7This setting allows the frozen","§7player to send chat messages.", "", "§7Status: " + setting2), (event, _) -> {
+                    boolean settingValue = AdminUtilities.getPlugin().getConfig().getBoolean("freeze-settings.allow-chat");
+                    AdminUtilities.getPlugin().getConfig().set("freeze-settings.allow-chat", !settingValue);
+                    openGUI((Player)event.getWhoClicked(), "freeze_settings");
+                });
+                String setting3 = (AdminUtilities.getPlugin().getConfig().getBoolean("freeze-settings.teleport-player-to-ground")) ? "§aENABLED" : "§cDISABLED";
+                freezeSettings.setItem(12, freezeSettings.createItem(Material.ENDER_PEARL, "§eTeleport Frozen Player", "§7This setting teleports the frozen","§7player to the highest block at their position.", "", "§7Status: " + setting3), (event, _) -> {
+                    boolean settingValue = AdminUtilities.getPlugin().getConfig().getBoolean("freeze-settings.teleport-player-to-ground");
+                    AdminUtilities.getPlugin().getConfig().set("freeze-settings.teleport-player-to-ground", !settingValue);
+                    openGUI((Player)event.getWhoClicked(), "freeze_settings");
+                });
+                String setting4 = (AdminUtilities.getPlugin().getConfig().getBoolean("freeze-settings.allow-camera-movement")) ? "§aALLOWED" : "§cBLOCKED";
+                freezeSettings.setItem(13, freezeSettings.createItem(Material.SPYGLASS, "§eAllow Player Camera Movement", "§7This setting allows the frozen","§7player to move their camera while frozen.", "", "§7Status: " + setting4), (event, _) -> {
+                    boolean settingValue = AdminUtilities.getPlugin().getConfig().getBoolean("freeze-settings.allow-camera-movement");
+                    AdminUtilities.getPlugin().getConfig().set("freeze-settings.allow-camera-movement", !settingValue);
+                    openGUI((Player)event.getWhoClicked(), "freeze_settings");
+                });
+            });
+            guis.put("freeze_settings", freezeSettings);
         }
     }
 

@@ -1,5 +1,6 @@
 package org.senbler.adminUtilities.listeners;
 
+import org.bukkit.Location;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
@@ -8,14 +9,28 @@ import org.bukkit.event.block.BlockPlaceEvent;
 import org.bukkit.event.player.AsyncPlayerChatEvent;
 import org.bukkit.event.player.PlayerInteractEvent;
 import org.bukkit.event.player.PlayerMoveEvent;
+import org.senbler.adminUtilities.AdminUtilities;
 
+import static org.senbler.adminUtilities.commands.FreezeCommand.getFrozenLocation;
 import static org.senbler.adminUtilities.commands.FreezeCommand.isFrozen;
 
 public class FreezeListener implements Listener {
 
+    private AdminUtilities plugin;
+
+    public FreezeListener(AdminUtilities plugin) {
+        this.plugin = plugin;
+    }
+
     @EventHandler
     public void onPlayerMove(PlayerMoveEvent e) {
         Player p = e.getPlayer();
+        if (AdminUtilities.getPlugin().getConfig().getBoolean("freeze-settings.allow-camera-movement")) {
+            Location newLoc = e.getTo();
+            if (newLoc.getX() == getFrozenLocation(p).getX() && newLoc.getZ() == getFrozenLocation(p).getZ() && newLoc.getY() == getFrozenLocation(p).getY()) {
+                return;
+            }
+        }
         if (!isFrozen(p)) {
             return;
         }
@@ -24,6 +39,9 @@ public class FreezeListener implements Listener {
     }
     @EventHandler
     public void onPlayerInteract(PlayerInteractEvent e) {
+        if (plugin.getConfig().getBoolean("freeze-settings.allow-interact")) {
+            return;
+        }
         Player p = e.getPlayer();
         if (!isFrozen(p)) {
             return;
@@ -33,6 +51,9 @@ public class FreezeListener implements Listener {
     }
     @EventHandler
     public void onPlayerChat(AsyncPlayerChatEvent e) {
+        if (plugin.getConfig().getBoolean("freeze-settings.allow-chat")) {
+            return;
+        }
         Player p = e.getPlayer();
         if (!isFrozen(p)) {
             return;

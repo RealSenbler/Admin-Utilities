@@ -1,0 +1,9 @@
+freeze-settings:
+  allow-interact: false
+  #Breaking, placing, using blocks, etc.
+  allow-chat: false
+  #This does not prevent commands from being run
+  allow-camera-movement: false
+  #Allows the frozen player to move their camera while frozen
+  teleport-player-to-ground: true
+  #This will prevent the player from being kicked for flying if frozen in the air, however, it could be annoying since it snaps the camera

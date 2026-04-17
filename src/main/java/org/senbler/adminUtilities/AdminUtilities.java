@@ -14,6 +14,8 @@ public final class AdminUtilities extends JavaPlugin {
     @Override
     public void onEnable() {
         // Plugin startup logic
+        saveDefaultConfig();
+
         plugin = this;
         Menus.initialize();
 
@@ -23,7 +25,7 @@ public final class AdminUtilities extends JavaPlugin {
 
         //getServer().getPluginManager().registerEvents(new testMenu(Menus.whitelistMenu), this);
         getServer().getPluginManager().registerEvents(new Menus(), this);
-        getServer().getPluginManager().registerEvents(new FreezeListener(), this);
+        getServer().getPluginManager().registerEvents(new FreezeListener(this), this);
 
         getLogger().info("[AdminUtilities] Enabled");
 
@@ -32,6 +34,8 @@ public final class AdminUtilities extends JavaPlugin {
     @Override
     public void onDisable() {
         // Plugin shutdown logic
+        saveConfig();
+
         getLogger().info("[AdminUtilities] Disabled");
     }
 
