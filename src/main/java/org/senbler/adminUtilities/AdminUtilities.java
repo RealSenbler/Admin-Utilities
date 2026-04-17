@@ -3,7 +3,8 @@ package org.senbler.adminUtilities;
 import org.bukkit.entity.Player;
 import org.bukkit.plugin.Plugin;
 import org.bukkit.plugin.java.JavaPlugin;
-import org.senbler.adminUtilities.commands.AdminUtilitiesCommand;
+import org.senbler.adminUtilities.commands.*;
+import org.senbler.adminUtilities.listeners.*;
 import org.senbler.adminUtilities.menus.Menus;
 
 public final class AdminUtilities extends JavaPlugin {
@@ -17,9 +18,12 @@ public final class AdminUtilities extends JavaPlugin {
         Menus.initialize();
 
         getCommand("adminutilities").setExecutor(new AdminUtilitiesCommand());
+        getCommand("freeze").setExecutor(new FreezeCommand());
+        getCommand("unfreeze").setExecutor(new UnfreezeCommand());
 
         //getServer().getPluginManager().registerEvents(new testMenu(Menus.whitelistMenu), this);
         getServer().getPluginManager().registerEvents(new Menus(), this);
+        getServer().getPluginManager().registerEvents(new FreezeListener(), this);
 
         getLogger().info("[AdminUtilities] Enabled");
 

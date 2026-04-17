@@ -10,3 +10,15 @@ commands:
     description: Opens the main menu.
     usage: /adminutilities
     aliases: [adminutil, au, test]
+    permission: AdminUtilities.main_menu
+    permission-message: You don't have permission to use this command!
+  freeze:
+    description: Freezes a player. This prevents them from moving, interacting with blocks, and chatting.
+    usage: /freeze <player>
+    permission: AdminUtilities.freeze
+    permission-message: You don't have permission to use this command!
+  unfreeze:
+    description: Unfreezes a player. The player can now move and interact as normal.
+    usage: /unfreeze <player>
+    permission: AdminUtilities.unfreeze
+    permission-message: You don't have permission to use this command!
