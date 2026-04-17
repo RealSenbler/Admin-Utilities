@@ -322,34 +322,6 @@ public class Menus implements Listener {
                         Player player = (Player) event.getWhoClicked();
                         openGUI(player, "main_menu");
                     });
-//                    // Plus Button
-//                    ItemStack plusButton = new ItemStack(Material.PLAYER_HEAD, 1);
-//                    SkullMeta skullMeta = (SkullMeta) plusButton.getItemMeta();
-//                    PlayerProfile playerProfile = Bukkit.createProfile("plusbutton");
-//                    PlayerTextures textures = playerProfile.getTextures();
-//                    try {
-//                        textures.setSkin(new URL("http://textures.minecraft.net/texture/177bb66fc73a97cefcb3a4bfdccb12281f44dd326ccd0ff39d47e985bfeff343"));
-//                    } catch (MalformedURLException e) {
-//                        throw new RuntimeException(e);
-//                    }
-//                    playerProfile.setTextures(textures);
-//                    skullMeta.setPlayerProfile(playerProfile);
-//                    skullMeta.setDisplayName("§aAdd a player to the whitelist");
-//                    skullMeta.setLore(Arrays.asList("§7Click to add a new player to the whitelist."));
-//                    plusButton.setItemMeta(skullMeta);
-//                    gui.setItem(51, plusButton, (event, _) -> {
-//                        Player player = (Player) event.getWhoClicked();
-//                        player.closeInventory();
-//                        player.sendTitle("§a§lInput", "§7Enter the username in chat", 5, 80, 5);
-//                        awaitingInput.put(player.getUniqueId(), input -> {
-//                            AdminUtilities.sendMessage(player, "§a" + input + " was added to the whitelist!");
-//                            OfflinePlayer pl = Bukkit.getOfflinePlayer(input);
-//                            if (pl != null && !pl.isWhitelisted()) {
-//                                pl.setWhitelisted(true);
-//                            }
-//                            openGUI(player, "ban_menu");
-//                        });
-//                    });
 
                     Bukkit.getBannedPlayers().stream().forEach(offlinePlayer -> {
                         ItemStack item = new ItemStack(Material.PLAYER_HEAD, 1);
