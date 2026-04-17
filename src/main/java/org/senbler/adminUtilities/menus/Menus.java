@@ -43,20 +43,12 @@ public class Menus implements Listener {
         //Main Menu
         {
             GUI mainMenu = new GUI("§cAdmin Utilities", 3);
-            mainMenu.setOnCreate((player, gui) -> {
+            mainMenu.setOnCreate((_, _) -> {
                 mainMenu.fillEdge(null);
-                mainMenu.setItem(22, mainMenu.createItem(Material.BARRIER, "§cExit", "§7Click to exit the menu."), (event, _) -> {
-                    event.getWhoClicked().closeInventory();
-                });
-                mainMenu.setItem(10, mainMenu.createItem(Material.SKELETON_SKULL, "§eWhitelisted Players", "§7Opens a menu of whitelisted players."), (event, _) -> {
-                    openGUI((Player) event.getWhoClicked(), "whitelist_menu");
-                });
-                mainMenu.setItem(11, mainMenu.createItem(Material.ANVIL, "§eBanned Players", "§7Opens a menu of banned players."), (event, _) -> {
-                    openGUI((Player) event.getWhoClicked(), "ban_menu");
-                });
-                mainMenu.setItem(12, mainMenu.createItem(Material.CRAFTING_TABLE, "§eItem Creator", "§7Opens an item creator menu.", "§7Currently implemented features:", "§7- Name", "§7- Lore", "§7- Glow", "§7- Material"), (event, _) -> {
-                    openGUI((Player) event.getWhoClicked(), "item_creator");
-                });
+                mainMenu.setItem(22, mainMenu.createItem(Material.BARRIER, "§cExit", "§7Click to exit the menu."), (event, _) -> event.getWhoClicked().closeInventory());
+                mainMenu.setItem(10, mainMenu.createItem(Material.SKELETON_SKULL, "§eWhitelisted Players", "§7Opens a menu of whitelisted players."), (event, _) -> openGUI((Player) event.getWhoClicked(), "whitelist_menu"));
+                mainMenu.setItem(11, mainMenu.createItem(Material.ANVIL, "§eBanned Players", "§7Opens a menu of banned players."), (event, _) -> openGUI((Player) event.getWhoClicked(), "ban_menu"));
+                mainMenu.setItem(12, mainMenu.createItem(Material.CRAFTING_TABLE, "§eItem Creator", "§7Opens an item creator menu.", "§7Currently implemented features:", "§7- Name", "§7- Lore", "§7- Glow", "§7- Material"), (event, _) -> openGUI((Player) event.getWhoClicked(), "item_creator"));
             });
             guis. put("main_menu", mainMenu);
         }
@@ -73,10 +65,7 @@ public class Menus implements Listener {
                     AtomicInteger i = new AtomicInteger(10);
                     gui.nuke();
                     gui.fillEdge(null);
-                    gui.setItem(49, gui.createItem(Material.BARRIER, "§cExit", "§7Click to exit the menu."), (event, _) -> {
-                        event.getWhoClicked().closeInventory();
-
-                    });
+                    gui.setItem(49, gui.createItem(Material.BARRIER, "§cExit", "§7Click to exit the menu."), (event, _) -> event.getWhoClicked().closeInventory());
                     gui.setItem(48, gui.createItem(Material.ARROW, "§aBack", null), (event, _) -> {
                         Player player = (Player) event.getWhoClicked();
                         openGUI(player, "main_menu");
@@ -156,7 +145,7 @@ public class Menus implements Listener {
             lore.add("§7This is your custom item!");
             final boolean[] glow = {false};
             int amount = 1;
-            itemCreator.setOnCreate((_, gui) -> {
+            itemCreator.setOnCreate((_, _) -> {
                 itemCreator.fillInventory(null);
 
                 ItemStack customItem = new ItemStack(itemMaterial[0], amount);
@@ -167,24 +156,15 @@ public class Menus implements Listener {
                 customItem.setItemMeta(customItemMeta);
                 itemCreator.setItem(24, customItem, null);
 
-                itemCreator.setItem(40, itemCreator.createItem(Material.BARRIER, "§cExit", "§7Exits the menu."), (event, _) -> {
-                    event.getWhoClicked().closeInventory();
-                });
-                itemCreator.setItem(39, itemCreator.createItem(Material.ARROW, "§aBack", null), (event, _) -> {
-                    openGUI((Player)event.getWhoClicked(), "main_menu");
-                });
+                itemCreator.setItem(40, itemCreator.createItem(Material.BARRIER, "§cExit", "§7Exits the menu."), (event, _) -> event.getWhoClicked().closeInventory());
+                itemCreator.setItem(39, itemCreator.createItem(Material.ARROW, "§aBack", null), (event, _) -> openGUI((Player)event.getWhoClicked(), "main_menu"));
                 itemCreator.setItem(10, itemCreator.createItem(Material.NAME_TAG, "§eItem Name", "§7Sets the name of the item.", "§7Use \"&\" for color codes."), (event, _) -> {
                     Player player = (Player) event.getWhoClicked();
                     player.closeInventory();
                     player.sendTitle("§a§lInput", "§7Enter the name in chat", 5, 80, 5);
                     awaitingInput.put(player.getUniqueId(), input -> {
                         title[0] = input.replace("&", "§");
-                        ItemStack tempcustomItem = new ItemStack(itemMaterial[0], amount);
-                        ItemMeta tempcustomItemMeta = customItem.getItemMeta();
-                        tempcustomItemMeta.setDisplayName(title[0]);
-                        tempcustomItemMeta.setLore(lore);
-                        tempcustomItemMeta.setEnchantmentGlintOverride(glow[0]);
-                        tempcustomItem.setItemMeta(tempcustomItemMeta);
+                        ItemStack tempcustomItem = updateCustomItem(itemMaterial[0], title[0], lore, glow[0], amount);
                         itemCreator.setItem(24, customItem, null);
                         openGUI(player, "item_creator");
                     });
@@ -201,12 +181,7 @@ public class Menus implements Listener {
                             AdminUtilities.sendMessage(player, "The entered input: " + input + " is not a valid material.");
                             AdminUtilities.sendMessage(player, "The correct format is either \"GRASS_BLOCK\" or \"grass block\".");
                         }
-                        ItemStack tempcustomItem = new ItemStack(itemMaterial[0], amount);
-                        ItemMeta tempcustomItemMeta = customItem.getItemMeta();
-                        tempcustomItemMeta.setDisplayName(title[0]);
-                        tempcustomItemMeta.setLore(lore);
-                        tempcustomItemMeta.setEnchantmentGlintOverride(glow[0]);
-                        tempcustomItem.setItemMeta(tempcustomItemMeta);
+                        ItemStack tempcustomItem = updateCustomItem(itemMaterial[0], title[0], lore, glow[0], amount);
                         itemCreator.setItem(24, customItem, null);
                         openGUI(player, "item_creator");
                     });
@@ -215,21 +190,14 @@ public class Menus implements Listener {
                     Player player = (Player) event.getWhoClicked();
                     player.playSound(player.getLocation(), Sound.BLOCK_NOTE_BLOCK_HAT, 1f, 1f);
                     glow[0] = !glow[0];
-                    ItemStack tempcustomItem = new ItemStack(itemMaterial[0], amount);
-                    ItemMeta tempcustomItemMeta = customItem.getItemMeta();
-                    tempcustomItemMeta.setDisplayName(title[0]);
-                    tempcustomItemMeta.setLore(lore);
-                    tempcustomItemMeta.setEnchantmentGlintOverride(glow[0]);
-                    tempcustomItem.setItemMeta(tempcustomItemMeta);
+                    ItemStack tempcustomItem = updateCustomItem(itemMaterial[0], title[0], lore, glow[0], amount);
                     itemCreator.setItem(24, customItem, null);
                     openGUI(player, "item_creator");
                 });
                 ArrayList<String> tempLore = new ArrayList<>();
-                tempLore.add(0, "§7Use \"&\" for color codes.");
+                tempLore.addFirst("§7Use \"&\" for color codes.");
                 tempLore.add("");
-                for (String s : lore) {
-                    tempLore.add(s);
-                }
+                tempLore.addAll(lore);
                 String[] loreArray = tempLore.toArray(new String[tempLore.size()]);
                 itemCreator.setItem(19, itemCreator.createItem(Material.BOOK, "§eItem Lore", loreArray), null);
                 itemCreator.setItem(20, itemCreator.createSkullItemStack(1, "http://textures.minecraft.net/texture/5ff31431d64587ff6ef98c0675810681f8c13bf96f51d9cb07ed7852b2ffd1", "§aAdd to lore", "§7Adds to the lore of the item."), (event, _) -> {
@@ -238,19 +206,12 @@ public class Menus implements Listener {
                     player.sendTitle("§a§lInput", "§7Enter the line in chat", 5, 80, 5);
                     awaitingInput.put(player.getUniqueId(), input -> {
                         lore.add(input.replace("&", "§"));
-                        ItemStack tempcustomItem = new ItemStack(itemMaterial[0], amount);
-                        ItemMeta tempcustomItemMeta = customItem.getItemMeta();
-                        tempcustomItemMeta.setDisplayName(title[0]);
-                        tempcustomItemMeta.setLore(lore);
-                        tempcustomItemMeta.setEnchantmentGlintOverride(glow[0]);
-                        tempcustomItem.setItemMeta(tempcustomItemMeta);
+                        ItemStack tempcustomItem = updateCustomItem(itemMaterial[0], title[0], lore, glow[0], amount);
                         itemCreator.setItem(24, customItem, null);
                         ArrayList<String> tempLore2 = new ArrayList<>();
-                        tempLore2.add(0, "§7Use \"&\" for color codes.");
+                        tempLore2.addFirst("§7Use \"&\" for color codes.");
                         tempLore2.add("");
-                        for (String s : lore) {
-                            tempLore2.add(s);
-                        }
+                        tempLore2.addAll(lore);
                         String[] loreArray2 = tempLore2.toArray(new String[tempLore2.size()]);
                         itemCreator.setItem(19, itemCreator.createItem(Material.BOOK, "§eItem Lore", loreArray2), null);
                         openGUI(player, "item_creator");
@@ -258,14 +219,9 @@ public class Menus implements Listener {
                 });
                 itemCreator.setItem(21, itemCreator.createSkullItemStack(1, "http://textures.minecraft.net/texture/4e4b8b8d2362c864e062301487d94d3272a6b570afbf80c2c5b148c954579d46", "§cRemove last line", "§7Removes the last line of lore."), (event, _) -> {
                     Player player = (Player) event.getWhoClicked();
-                    if (lore.size() > 0) {
-                        lore.remove(lore.size() - 1);
-                        ItemStack tempcustomItem = new ItemStack(itemMaterial[0], amount);
-                        ItemMeta tempcustomItemMeta = customItem.getItemMeta();
-                        tempcustomItemMeta.setDisplayName(title[0]);
-                        tempcustomItemMeta.setLore(lore);
-                        tempcustomItemMeta.setEnchantmentGlintOverride(glow[0]);
-                        tempcustomItem.setItemMeta(tempcustomItemMeta);
+                    if (!lore.isEmpty()) {
+                        lore.removeLast();
+                        ItemStack tempcustomItem = updateCustomItem(itemMaterial[0], title[0], lore, glow[0], amount);
                         itemCreator.setItem(24, customItem, null);
                         openGUI(player, "item_creator");
                     } else {
@@ -274,14 +230,9 @@ public class Menus implements Listener {
                 });
                 itemCreator.setItem(22, itemCreator.createItem(Material.FLINT_AND_STEEL, "§eClear Lore", "§7Clears every line of the lore."), (event, _) -> {
                     Player player = (Player) event.getWhoClicked();
-                    if (lore.size() > 0) {
+                    if (!lore.isEmpty()) {
                         lore.clear();
-                        ItemStack tempcustomItem = new ItemStack(itemMaterial[0], amount);
-                        ItemMeta tempcustomItemMeta = customItem.getItemMeta();
-                        tempcustomItemMeta.setDisplayName(title[0]);
-                        tempcustomItemMeta.setLore(lore);
-                        tempcustomItemMeta.setEnchantmentGlintOverride(glow[0]);
-                        tempcustomItem.setItemMeta(tempcustomItemMeta);
+                        ItemStack tempcustomItem = updateCustomItem(itemMaterial[0], title[0], lore, glow[0], amount);
                         itemCreator.setItem(24, customItem, null);
                         openGUI(player, "item_creator");
                     } else {
@@ -290,12 +241,7 @@ public class Menus implements Listener {
                 });
                 itemCreator.setItem(42, itemCreator.createItem(Material.CHEST, "§aGive item", "§7Click to give yourself this item."), (event, _) -> {
                     Player player = (Player) event.getWhoClicked();
-                    ItemStack tempcustomItem = new ItemStack(itemMaterial[0], amount);
-                    ItemMeta tempcustomItemMeta = customItem.getItemMeta();
-                    tempcustomItemMeta.setDisplayName(title[0]);
-                    tempcustomItemMeta.setLore(lore);
-                    tempcustomItemMeta.setEnchantmentGlintOverride(glow[0]);
-                    tempcustomItem.setItemMeta(tempcustomItemMeta);
+                    ItemStack tempcustomItem = updateCustomItem(itemMaterial[0], title[0], lore, glow[0], amount);
                     player.give(tempcustomItem);
                 });
             });
@@ -314,10 +260,7 @@ public class Menus implements Listener {
                     AtomicInteger i = new AtomicInteger(10);
                     gui.nuke();
                     gui.fillEdge(null);
-                    gui.setItem(49, gui.createItem(Material.BARRIER, "§cExit", "§7Click to exit the menu."), (event, _) -> {
-                        event.getWhoClicked().closeInventory();
-
-                    });
+                    gui.setItem(49, gui.createItem(Material.BARRIER, "§cExit", "§7Click to exit the menu."), (event, _) -> event.getWhoClicked().closeInventory());
                     gui.setItem(48, gui.createItem(Material.ARROW, "§aBack", null), (event, _) -> {
                         Player player = (Player) event.getWhoClicked();
                         openGUI(player, "main_menu");
@@ -363,6 +306,16 @@ public class Menus implements Listener {
         return gui;
     }
 
+    private static ItemStack updateCustomItem (Material material, String title, ArrayList<String> lore, boolean glow, int amount) {
+        ItemStack newItem = new ItemStack(material, amount);
+        ItemMeta meta = newItem.getItemMeta();
+        meta.setDisplayName(title);
+        meta.setLore(lore);
+        meta.setEnchantmentGlintOverride(glow);
+        newItem.setItemMeta(meta);
+        return newItem;
+    }
+
     public GUI getActiveGUI(Player player) {
         return openGUIs.get(player.getUniqueId());
     }
@@ -402,8 +355,6 @@ public class Menus implements Listener {
             gui.getFunction(event.getSlot()).run(event, gui);
             //test_hasAccepted = true;
         }
-        //temporary debug logging.
-        //Bukkit.getLogger().info(test_hasAccepted ? "Consumer accepted at slot: " + event.getSlot() : "Consumer rejected at slot: " + event.getSlot());
     }
 
     @EventHandler
