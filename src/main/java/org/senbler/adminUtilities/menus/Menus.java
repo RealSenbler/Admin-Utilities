@@ -309,7 +309,7 @@ public class Menus implements Listener {
                 settingsMenu.setItem(21, settingsMenu.createItem(Material.ARROW, "§aBack", null), (event, _) -> {
                     openGUI((Player)event.getWhoClicked(), "main_menu");
                 });
-                settingsMenu.setItem(10, settingsMenu.createItem(Material.ICE, "§bFreeze §7Settings", "§7Settings for the freeze menu."), (event, _) -> {
+                settingsMenu.setItem(10, settingsMenu.createItem(Material.BLUE_ICE, "§bFreeze §7Settings", "§7Settings for the freeze menu."), (event, _) -> {
                     openGUI((Player)event.getWhoClicked(), "freeze_settings");
                 });
             });
@@ -319,7 +319,7 @@ public class Menus implements Listener {
         {
             GUI freezeSettings = new GUI("§bFreeze §7Settings", 3);
             freezeSettings.setOnCreate((player2, gui) -> {
-                freezeSettings.fillEdge(null);
+                freezeSettings.fillInventory(null);
                 freezeSettings.setItem(22, freezeSettings.createItem(Material.BARRIER, "§cClose", null), (event, _) -> {
                     event.getWhoClicked().closeInventory();
                 });
