@@ -22,3 +22,12 @@ commands:
     usage: /unfreeze <player>
     permission: AdminUtilities.unfreeze
     permission-message: You don't have permission to use this command!
+  spawnnpc:
+    description: testing
+    usage: /spawnnpc
+permissions:
+  AdminUtilities:
+    main_menu: Allows the player to open the main menu
+    freeze: Allows the player to use the freeze command
+    unfreeze: Allows a player to use the unfreeze command
+    edit_npc: Allows a player to edit an NPC

@@ -7,6 +7,7 @@ import net.kyori.adventure.text.format.NamedTextColor;
 import net.kyori.adventure.text.format.TextDecoration;
 import net.kyori.adventure.text.serializer.plain.PlainTextComponentSerializer;
 import org.bukkit.*;
+import org.bukkit.entity.EntityType;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
@@ -18,6 +19,8 @@ import org.bukkit.inventory.meta.ItemMeta;
 import org.bukkit.inventory.meta.SkullMeta;
 import org.bukkit.profile.PlayerTextures;
 import org.senbler.adminUtilities.AdminUtilities;
+import org.senbler.adminUtilities.npc.npc;
+import org.senbler.adminUtilities.npc.npcFile;
 
 import java.net.MalformedURLException;
 import java.net.URL;
@@ -32,13 +35,17 @@ public class Menus implements Listener {
     private static final HashMap<String, GUI> guis = new HashMap<>();
     private static final HashMap<UUID, GUI> openGUIs = new HashMap<>();
     private static final Map<UUID, Consumer<String>> awaitingInput = new HashMap<>();
+    private static npc editingNPC = null;
+    public static npc makingNPC = new npc("§aNew NPC", EntityType.ZOMBIE);
+
 
     public static GUI getGUI(String key) {
         return guis.get(key);
+
     }
 
     public static void initialize() {
-
+        makingNPC.addDialog("§7Great Dialog");
 
         //Main Menu
         {
@@ -50,6 +57,7 @@ public class Menus implements Listener {
                 mainMenu.setItem(10, mainMenu.createItem(Material.SKELETON_SKULL, "§eWhitelisted Players", "§7Opens a menu of whitelisted players."), (event, _) -> openGUI((Player) event.getWhoClicked(), "whitelist_menu"));
                 mainMenu.setItem(11, mainMenu.createItem(Material.ANVIL, "§eBanned Players", "§7Opens a menu of banned players."), (event, _) -> openGUI((Player) event.getWhoClicked(), "ban_menu"));
                 mainMenu.setItem(12, mainMenu.createItem(Material.CRAFTING_TABLE, "§eItem Creator", "§7Opens an item creator menu.", "§7Currently implemented features:", "§7- Name", "§7- Lore", "§7- Glow", "§7- Material"), (event, _) -> openGUI((Player) event.getWhoClicked(), "item_creator"));
+                mainMenu.setItem(13, mainMenu.createItem(Material.VILLAGER_SPAWN_EGG, "§eNPC Creator", "§7Opens the NPC creator menu."), (event, _) -> openGUI((Player) event.getWhoClicked(), "npc_creator"));
             });
             guis. put("main_menu", mainMenu);
         }
@@ -298,6 +306,193 @@ public class Menus implements Listener {
             guis.put("ban_menu", bansMenu);
         }
 
+        //NPC Menus
+        {
+            // NPC Creator
+            {
+                GUI npcCreator = new GUI("§eNPC Creator", 5);
+                npcCreator.setOnCreate((player2, gui) -> {
+                    npcCreator.fillInventory(null);
+                    npcCreator.setItem(40, npcCreator.createItem(Material.BARRIER, "§cClose", null), (event, _) -> {
+                        event.getWhoClicked().closeInventory();
+                    });
+                    npcCreator.setItem(39, npcCreator.createItem(Material.ARROW, "§aBack", null), (event, _) -> {
+                        openGUI((Player)event.getWhoClicked(), "main_menu");
+                    });
+                    npcCreator.setItem(25, makingNPC.getNPCEgg(), null);
+                    npcCreator.setItem(43, npcCreator.createItem(Material.CHEST, "§aGive NPC Egg", "§7Gives a placeable NPC egg."), (event, _) -> {
+                        Player player = (Player) event.getWhoClicked();
+                        player.give(makingNPC.getNPCEgg());
+                    });
+                    npcCreator.setItem(10, npcCreator.createItem(Material.NAME_TAG, "§eNPC Name", "§7Sets the name of the NPC.", "§7Use \"&\" for color codes."), (event, _) -> {
+                        Player player = (Player) event.getWhoClicked();
+                        player.closeInventory();
+                        player.sendTitle("§a§lInput", "§7Enter the name in chat", 5, 80, 5);
+                        awaitingInput.put(player.getUniqueId(), input -> {
+                            input = input.replace("&", "§");
+                            if (makingNPC != null) {
+                                makingNPC.setName(input);
+                            }
+                            npcCreator.setItem(25, makingNPC.getNPCEgg(), null);
+                            openGUI(player, "npc_editor");
+                        });
+                    });
+                    npcCreator.setItem(11, npcCreator.createItem(Material.EGG, "§eChange Entity", "§7Change the entity of the NPC.", "", "§7Format:", "§7 - POLAR_BEAR", "§7 - polar bear"),  (event, _) -> {
+                        Player player = (Player) event.getWhoClicked();
+                        player.closeInventory();
+                        player.sendTitle("§aInput", "§7Enter the name of the entity in chat.", 5, 80, 5);
+                        awaitingInput.put(player.getUniqueId(), input -> {
+                            input = input.toUpperCase().replace(" ", "_");
+                            EntityType entityType = EntityType.fromName(input);
+                            if (entityType != null) {
+                                makingNPC.setMobType(entityType);
+                            } else {
+                                AdminUtilities.sendMessage(player, "Invalid entity name! Valid formats: \"POLAR_BEAR\", \"polar bear\"");
+                            }
+                            npcCreator.setItem(25, makingNPC.getNPCEgg(), null);
+                            openGUI(player, "npc_creator");
+                        });
+                    });
+
+                    String[] dialogArray = {""};
+                    if (makingNPC != null) {
+                        dialogArray = makingNPC.getDialog().toArray(new String[makingNPC.getDialog().size()]);
+                    }
+                    npcCreator.setItem(19, npcCreator.createItem(Material.BOOK, "§eNPC Dialog", dialogArray), null);
+                    npcCreator.setItem(20, npcCreator.createSkullItemStack(1, "http://textures.minecraft.net/texture/5ff31431d64587ff6ef98c0675810681f8c13bf96f51d9cb07ed7852b2ffd1", "§aAdd To Dialog", "§7Adds a line of dialog.", "§7Use \"&\" for color codes.", ""), (event, _) -> {
+                        Player player = (Player) event.getWhoClicked();
+                        player.closeInventory();
+                        player.sendTitle("§a§lInput", "§7Enter the line to add in chat.", 5, 80, 5);
+                        awaitingInput.put(player.getUniqueId(), input -> {
+                            final String line = input.replace("&", "§");
+                            Bukkit.getScheduler().runTask(AdminUtilities.getPlugin(), () -> {
+                                makingNPC.addDialog(line);
+
+                                ArrayList<String> tempDialog2 = new ArrayList<>();
+                                tempDialog2.add("§7Use \"&\" for color codes.");
+                                tempDialog2.add("");
+                                tempDialog2.addAll(makingNPC.getDialog());
+                                String[] dialogArray2 = tempDialog2.toArray(new String[0]);
+
+                                openGUI(player, "npc_creator");
+
+                                npcCreator.setItem(19, npcCreator.createItem(Material.BOOK, "§eNPC Dialog", dialogArray2), null);
+                                npcCreator.setItem(25, makingNPC.getNPCEgg(), null);
+
+                            });
+                        });
+                    });
+                    npcCreator.setItem(21, npcCreator.createSkullItemStack(1, "http://textures.minecraft.net/texture/4e4b8b8d2362c864e062301487d94d3272a6b570afbf80c2c5b148c954579d46", "§cRemove Last Line", "§7Removes the last line of dialog."), (event, _) -> {
+                        Player player = (Player) event.getWhoClicked();
+                        if (!makingNPC.getDialog().isEmpty()) {
+                            makingNPC.removeDialog();
+                            openGUI(player, "npc_creator");
+                            npcCreator.setItem(25, makingNPC.getNPCEgg(), null);
+                        } else {
+                            AdminUtilities.sendMessage(player, "The dialog is already empty!");
+                        }
+                    });
+                    npcCreator.setItem(22, npcCreator.createItem(Material.FLINT_AND_STEEL, "§eClear Dialog", "§7Clears every line of the dialog."), (event, _) -> {
+                        Player player = (Player) event.getWhoClicked();
+                        if (!makingNPC.getDialog().isEmpty()) {
+                            makingNPC.clearDialog();
+                            npcCreator.setItem(25, makingNPC.getNPCEgg(), null);
+                            openGUI(player, "npc_creator");
+                        } else {
+                            AdminUtilities.sendMessage(player, "The dialog is already empty!");
+                        }
+                    });
+                });
+                guis.put("npc_creator", npcCreator);
+            }
+            // NPC Editor
+            {
+                GUI npcEditor = new GUI("§eNPC Editor", 5);
+                npcEditor.setOnCreate((player2, gui) -> {
+                    npcEditor.fillInventory(null);
+                    npcEditor.setItem(40, npcEditor.createItem(Material.BARRIER, "§cClose", null), (event, _) -> {
+                        event.getWhoClicked().closeInventory();
+                    });
+//                    npcEditor.setItem(25, npcEditor.createItem(Material.VILLAGER_SPAWN_EGG, "§aYour NPC", null), null);
+                    npcEditor.setItem(10, npcEditor.createItem(Material.NAME_TAG, "§eNPC Name", "§7Sets the name of the NPC.", "§7Use \"&\" for color codes."), (event, _) -> {
+                        Player player = (Player) event.getWhoClicked();
+                        player.closeInventory();
+                        player.sendTitle("§a§lInput", "§7Enter the name in chat", 5, 80, 5);
+                        awaitingInput.put(player.getUniqueId(), input -> {
+                            input = input.replace("&", "§");
+                            if (editingNPC != null) {
+                                editingNPC.setName(input);
+                            }
+                            openGUI(player, "npc_editor");
+                        });
+                    });
+                    npcEditor.setItem(11, npcEditor.createItem(Material.EGG, "§eChange Entity", "§7Change the entity of the NPC.", "", "§7Format:", "§7 - POLAR_BEAR", "§7 - polar bear"),  (event, _) -> {
+                        Player player = (Player) event.getWhoClicked();
+                        player.closeInventory();
+                        player.sendTitle("§aInput", "§7Enter the name of the entity in chat.", 5, 80, 5);
+                        awaitingInput.put(player.getUniqueId(), input -> {
+                            input = input.toUpperCase().replace(" ", "_");
+                            EntityType entityType = EntityType.fromName(input);
+                            if (entityType != null) {
+                                editingNPC.setMobType(entityType);
+                            } else {
+                                AdminUtilities.sendMessage(player, "Invalid entity name! Valid formats: \"POLAR_BEAR\", \"polar bear\"");
+                            }
+                            openGUI(player, "npc_editor");
+                        });
+                    });
+
+                    ArrayList<String> dialogArray = new ArrayList<>();
+                    dialogArray.add("§7Use \"&\" for color codes.");
+                    dialogArray.add("");
+                    if (editingNPC != null) {
+                        dialogArray.addAll(editingNPC.getDialog());
+                    }
+                    String[] dialogArray1 = dialogArray.toArray(new String[dialogArray.size()]);
+                    npcEditor.setItem(19, npcEditor.createItem(Material.BOOK, "§eNPC Dialog", dialogArray1), null);
+                    npcEditor.setItem(20, npcEditor.createSkullItemStack(1, "http://textures.minecraft.net/texture/5ff31431d64587ff6ef98c0675810681f8c13bf96f51d9cb07ed7852b2ffd1", "§aAdd To Dialog", "§7Adds a line of dialog.", "§7Use \"&\" for color codes."), (event, _) -> {
+                        Player player = (Player) event.getWhoClicked();
+                        player.closeInventory();
+                        player.sendTitle("§a§lInput", "§7Enter the line to add in chat.", 5, 80, 5);
+                        awaitingInput.put(player.getUniqueId(), input -> {
+                            editingNPC.addDialog(input.replace("&", "§"));
+                            ArrayList<String> tempDialog2 = new ArrayList<>();
+                            tempDialog2.addFirst("§7Use \"&\" for color codes.");
+                            tempDialog2.add("");
+                            tempDialog2.addAll(editingNPC.getDialog());
+                            String[] dialogArray2 = tempDialog2.toArray(new String[tempDialog2.size()]);
+                            openGUI(player, "npc_editor");
+                            npcEditor.setItem(19, npcEditor.createItem(Material.BOOK, "§eNPC Dialog", dialogArray2), null);
+                        });
+                    });
+                    npcEditor.setItem(21, npcEditor.createSkullItemStack(1, "http://textures.minecraft.net/texture/4e4b8b8d2362c864e062301487d94d3272a6b570afbf80c2c5b148c954579d46", "§cRemove Last Line", "§7Removes the last line of dialog."), (event, _) -> {
+                        Player player = (Player) event.getWhoClicked();
+                        if (!editingNPC.getDialog().isEmpty()) {
+                            editingNPC.removeDialog();
+                            openGUI(player, "npc_editor");
+                        } else {
+                            AdminUtilities.sendMessage(player, "The dialog is already empty!");
+                        }
+                    });
+                    npcEditor.setItem(22, npcEditor.createItem(Material.FLINT_AND_STEEL, "§eClear Dialog", "§7Clears every line of the dialog."), (event, _) -> {
+                        Player player = (Player) event.getWhoClicked();
+                        if (!editingNPC.getDialog().isEmpty()) {
+                            editingNPC.clearDialog();
+                            openGUI(player, "npc_editor");
+                        } else {
+                            AdminUtilities.sendMessage(player, "The dialog is already empty!");
+                        }
+                    });
+                    npcEditor.setItem(28, npcEditor.createItem(Material.DIAMOND_SWORD, "§eRemove NPC", "§7Deletes the NPC."),  (event, _) -> {
+                       npcFile.removeNpc(editingNPC);
+                       editingNPC = null;
+                       event.getWhoClicked().closeInventory();
+                    });
+                });
+                guis.put("npc_editor", npcEditor);
+            }
+        }
+
         // Settings menu
         {
             GUI settingsMenu = new GUI("§7Plugin Settings", 3);
@@ -360,6 +555,12 @@ public class Menus implements Listener {
         gui.open(player);
         openGUIs.put(player.getUniqueId(), gui);
         return gui;
+    }
+    public static void openNPCEditor(Player player, npc npc) {
+        GUI gui = getGUI("npc_editor");
+        editingNPC = npc;
+        gui.open(player);
+        openGUIs.put(player.getUniqueId(), gui);
     }
 
     private static ItemStack updateCustomItem (Material material, String title, ArrayList<String> lore, boolean glow, int amount) {

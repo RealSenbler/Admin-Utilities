@@ -25,14 +25,14 @@ public class FreezeListener implements Listener {
     @EventHandler
     public void onPlayerMove(PlayerMoveEvent e) {
         Player p = e.getPlayer();
+        if (!isFrozen(p)) {
+            return;
+        }
         if (AdminUtilities.getPlugin().getConfig().getBoolean("freeze-settings.allow-camera-movement")) {
             Location newLoc = e.getTo();
             if (newLoc.getX() == getFrozenLocation(p).getX() && newLoc.getZ() == getFrozenLocation(p).getZ() && newLoc.getY() == getFrozenLocation(p).getY()) {
                 return;
             }
-        }
-        if (!isFrozen(p)) {
-            return;
         }
         e.setCancelled(true);
         p.sendTitle("§7You Are §bFrozen§", "§7You cannot move while frozen.", 2, 10, 2);
