@@ -334,7 +334,7 @@ public class Menus implements Listener {
                                 makingNPC.setName(input);
                             }
                             npcCreator.setItem(25, makingNPC.getNPCEgg(), null);
-                            openGUI(player, "npc_editor");
+                            openGUI(player, "npc_creator");
                         });
                     });
                     npcCreator.setItem(11, npcCreator.createItem(Material.EGG, "§eChange Entity", "§7Change the entity of the NPC.", "", "§7Format:", "§7 - POLAR_BEAR", "§7 - polar bear"),  (event, _) -> {

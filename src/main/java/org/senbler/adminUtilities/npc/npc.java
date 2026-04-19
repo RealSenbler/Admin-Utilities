@@ -112,11 +112,6 @@ public class npc {
     }
 
     public void addDialog(String dialog) {
-        Bukkit.getLogger().info("addDialog called on npc@"
-                + System.identityHashCode(this)
-                + " listId=" + System.identityHashCode(this.dialog)
-                + " adding='" + dialog + "'"
-                + " currentList=" + this.dialog);
         this.dialog.add(dialog);
     }
     public void removeDialog() {
@@ -131,7 +126,9 @@ public class npc {
 
     public void setName(String name) {
         this.name = name;
-        this.entity.setCustomName(name);
+        if (this.entity != null) {
+            this.entity.setCustomName(name);
+        }
     }
     public String getName () {
         return this.name;

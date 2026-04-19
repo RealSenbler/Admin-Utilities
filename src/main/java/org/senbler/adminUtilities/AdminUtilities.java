@@ -32,7 +32,6 @@ public final class AdminUtilities extends JavaPlugin {
         getCommand("adminutilities").setExecutor(new AdminUtilitiesCommand());
         getCommand("freeze").setExecutor(new FreezeCommand());
         getCommand("unfreeze").setExecutor(new UnfreezeCommand());
-        getCommand("spawnnpc").setExecutor(new spawnNPC());
 
         getServer().getPluginManager().registerEvents(new Menus(), this);
         getServer().getPluginManager().registerEvents(new FreezeListener(this), this);

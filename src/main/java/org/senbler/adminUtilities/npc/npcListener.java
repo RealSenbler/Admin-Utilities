@@ -93,6 +93,7 @@ public class npcListener implements Listener {
     }
     @EventHandler
     public void onPlayerUseItem(PlayerInteractEvent e) {
+        if (e.getItem() == null) return;
         Player p = e.getPlayer();
         ItemStack item = e.getItem();
         ItemMeta meta = item.getItemMeta();
