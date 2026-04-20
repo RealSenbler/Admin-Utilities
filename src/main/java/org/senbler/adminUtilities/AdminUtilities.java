@@ -8,9 +8,7 @@ import org.senbler.adminUtilities.listeners.*;
 import org.senbler.adminUtilities.menus.Menus;
 import org.senbler.adminUtilities.npc.npc;
 import org.senbler.adminUtilities.npc.npcFile;
-import org.senbler.adminUtilities.npc.npcListener;
-
-import java.util.ArrayList;
+import org.senbler.adminUtilities.listeners.npcListener;
 
 public final class AdminUtilities extends JavaPlugin {
 

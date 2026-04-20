@@ -7,7 +7,6 @@ import org.bukkit.Color;
 import org.bukkit.Location;
 import org.bukkit.Particle;
 import org.bukkit.World;
-import org.bukkit.entity.NPC;
 import org.senbler.adminUtilities.AdminUtilities;
 
 import java.io.File;
@@ -19,7 +18,7 @@ import java.util.ArrayList;
 
 public class npcFile {
 
-    private static ArrayList<npc> npcs = new ArrayList<>();
+    private static final ArrayList<npc> npcs = new ArrayList<>();
 
     public static void saveNPCs() {
         Gson gson = new GsonBuilder().setPrettyPrinting().create();

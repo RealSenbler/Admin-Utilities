@@ -1,13 +1,11 @@
-package org.senbler.adminUtilities.npc;
+package org.senbler.adminUtilities.listeners;
 
 import io.papermc.paper.entity.LookAnchor;
-import org.bukkit.Bukkit;
 import org.bukkit.Location;
 import org.bukkit.NamespacedKey;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
-import org.bukkit.event.block.Action;
 import org.bukkit.event.entity.EntityCombustEvent;
 import org.bukkit.event.entity.EntityDamageEvent;
 import org.bukkit.event.player.PlayerInteractEntityEvent;
@@ -18,6 +16,8 @@ import org.bukkit.inventory.meta.ItemMeta;
 import org.bukkit.persistence.PersistentDataType;
 import org.senbler.adminUtilities.AdminUtilities;
 import org.senbler.adminUtilities.menus.Menus;
+import org.senbler.adminUtilities.npc.npc;
+import org.senbler.adminUtilities.npc.npcFile;
 
 import java.util.ArrayList;
 import java.util.HashMap;
