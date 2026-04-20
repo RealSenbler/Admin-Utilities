@@ -63,7 +63,10 @@ public class npcListener implements Listener {
             return;
         }
         for (npc npc : npcs) {
-            if (playerLocation.distanceSquared(npc.getLocation()) < 5*5) {
+            Location npcLocation = npc.getLocation();
+            if (npcLocation == null || npc.getEntity() == null) continue;
+            if (!npcLocation.getWorld().equals(playerLocation.getWorld())) continue;
+            if (playerLocation.distanceSquared(npcLocation) < 5*5) {
                 double x = playerLocation.getX();
                 double y = playerLocation.getY()+1;
                 double z = playerLocation.getZ();
@@ -97,7 +100,11 @@ public class npcListener implements Listener {
         Player p = e.getPlayer();
         ItemStack item = e.getItem();
         ItemMeta meta = item.getItemMeta();
-        if (meta.getPersistentDataContainer().get(new NamespacedKey(AdminUtilities.getPlugin(), "metadata"), PersistentDataType.STRING).equals("npcegg")) {
+        String data = meta.getPersistentDataContainer().get(new NamespacedKey(AdminUtilities.getPlugin(), "metadata"), PersistentDataType.STRING);
+        if (data == null) {
+            return;
+        }
+        if (data.equals("npcegg")) {
             e.setCancelled(true);
             Location location = e.getInteractionPoint().getBlock().getLocation();
             location = new Location(location.getWorld(), location.getX(), location.getY(), location.getZ());

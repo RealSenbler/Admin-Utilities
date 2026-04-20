@@ -3,6 +3,7 @@ package org.senbler.adminUtilities.npc;
 import com.google.common.reflect.TypeToken;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
+import io.papermc.paper.datacomponent.item.ResolvableProfile;
 import org.bukkit.*;
 import org.bukkit.entity.*;
 import org.bukkit.inventory.EntityEquipment;
@@ -11,6 +12,7 @@ import org.bukkit.inventory.meta.ItemMeta;
 import org.bukkit.metadata.FixedMetadataValue;
 import org.bukkit.persistence.PersistentDataType;
 import org.bukkit.plugin.Plugin;
+import org.bukkit.profile.PlayerProfile;
 import org.bukkit.scheduler.BukkitScheduler;
 import org.checkerframework.checker.units.qual.N;
 import org.senbler.adminUtilities.AdminUtilities;
@@ -28,11 +30,12 @@ public class npc {
     private String name;
     private ArrayList<String> dialog;
     private EntityType mobType;
-    private ArrayList<npc> npcs = new ArrayList<>();
     private String worldName;
     private double x, y, z;
     private float yaw, pitch;
+    private UUID entityId;
     private transient Entity entity;
+    private transient boolean isSendingDialog = false;
 
     public npc(String name, EntityType entityType) {
         this.name = name;
@@ -69,6 +72,12 @@ public class npc {
     private void spawnAt(Location loc) {
         loc = new Location(loc.getWorld(), ((int)loc.getBlockX())+.5, (int)loc.getBlockY(), ((int)loc.getBlockZ())+.5);
         entity = loc.getWorld().spawnEntity(loc, mobType);
+        entityId = entity.getUniqueId();
+        configureEntity();
+        storeLocation(entity.getLocation());
+    }
+
+    private void configureEntity() {
         entity.setCustomName(this.name);
         entity.setCustomNameVisible(true);
         entity.setMetadata("npc", new FixedMetadataValue(AdminUtilities.getPlugin(), true));
@@ -76,7 +85,6 @@ public class npc {
             living.setInvulnerable(true);
             living.setAI(false);
             living.setRemoveWhenFarAway(false);
-            living.setPersistent(true);
             living.setSilent(true);
             living.setCanPickupItems(false);
             EntityEquipment eq = living.getEquipment();
@@ -88,7 +96,6 @@ public class npc {
             mannequin.setDescription(null);
             mannequin.setImmovable(true);
         }
-        storeLocation(entity.getLocation());
     }
     private void storeLocation(Location loc) {
         this.worldName = loc.getWorld().getName();
@@ -145,8 +152,10 @@ public class npc {
         return entity != null ? entity.getUniqueId() : null;
     }
     public void sendDialog(Player p) {
+        if (isSendingDialog) return;
         BukkitScheduler scheduler = Bukkit.getScheduler();
         Plugin plugin = AdminUtilities.getPlugin();
+        isSendingDialog = true;
         for (int i = 0; i < dialog.size(); i++) {
             final String line = dialog.get(i);
             scheduler.runTaskLater(plugin,
@@ -162,13 +171,32 @@ public class npc {
                     ,
                     i * 20L);
         }
+        isSendingDialog = false;
     }
     public void remove () {
-        entity.remove();
+        if (entity != null) entity.remove();
     }
     public void respawn () {
         Location loc = buildLocation();
-        if (loc != null) spawnAt(loc);
+        if (loc == null) return;
+
+        loc.getChunk().load(true);
+
+        Entity existing = (entityId != null) ? Bukkit.getEntity(entityId) : null;
+        if (existing != null && !existing.isDead() && existing.getType() == mobType) {
+            this.entity = existing;
+            existing.teleport(loc);
+            configureEntity();
+            return;
+        }
+
+        for (Entity e : loc.getWorld().getNearbyEntities(loc, 2, 3, 2)) {
+            if (e.getType() == mobType && name.equals(e.getCustomName())) {
+                e.remove();
+            }
+        }
+
+        spawnAt(loc);
     }
     public ItemStack getNPCEgg () {
         String entityName = this.mobType.getName().toUpperCase();
@@ -189,13 +217,36 @@ public class npc {
         return item;
     }
 
+    public boolean isMannequin () {
+        if (entity == null) return false;
+        if (entity instanceof Mannequin) {
+            return true;
+        }
+        return false;
+    }
+    public boolean isVillager () {
+        if (entity == null) return false;
+        if (entity instanceof Villager) {
+            return true;
+        }
+        return false;
+    }
+
+    public void setSkin (String skinUsername) {
+        if (!isMannequin()) {
+            throw new IllegalStateException("Mannequin has not been set");
+        }
+        Mannequin mannequin = (Mannequin) entity;
+        PlayerProfile profile = Bukkit.createPlayerProfile(skinUsername);
+        mannequin.setProfile(ResolvableProfile.resolvableProfile((com.destroystokyo.paper.profile.PlayerProfile) profile));
+    }
+
     @Override
     public String toString() {
         return "npc{" +
                 "name='" + name + '\'' +
                 ", dialog=" + dialog +
                 ", mobType=" + mobType +
-                ", npcs=" + npcs +
                 ", worldName='" + worldName + '\'' +
                 ", x=" + x +
                 ", y=" + y +
