@@ -9,7 +9,7 @@ commands:
   adminutilities:
     description: Opens the main menu.
     usage: /adminutilities
-    aliases: [adminutil, au, test]
+    aliases: [adminutil, au]
     permission: AdminUtilities.main_menu
     permission-message: You don't have permission to use this command!
   freeze:
