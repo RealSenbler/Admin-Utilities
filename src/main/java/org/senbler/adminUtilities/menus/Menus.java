@@ -9,6 +9,7 @@ import net.kyori.adventure.text.serializer.plain.PlainTextComponentSerializer;
 import org.bukkit.*;
 import org.bukkit.entity.EntityType;
 import org.bukkit.entity.Player;
+import org.bukkit.entity.Villager;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
 import org.bukkit.event.inventory.InventoryClickEvent;
@@ -166,7 +167,7 @@ public class Menus implements Listener {
                 itemCreator.setItem(24, customItem, null);
 
                 itemCreator.setItem(40, itemCreator.createItem(Material.BARRIER, "§cExit", "§7Exits the menu."), (event, _) -> event.getWhoClicked().closeInventory());
-                itemCreator.setItem(39, itemCreator.createItem(Material.ARROW, "§aBack", null), (event, _) -> openGUI((Player)event.getWhoClicked(), "main_menu"));
+                itemCreator.setItem(39, itemCreator.createItem(Material.ARROW, "§aBack"), (event, _) -> openGUI((Player)event.getWhoClicked(), "main_menu"));
                 itemCreator.setItem(10, itemCreator.createItem(Material.NAME_TAG, "§eItem Name", "§7Sets the name of the item.", "§7Use \"&\" for color codes."), (event, _) -> {
                     Player player = (Player) event.getWhoClicked();
                     player.closeInventory();
@@ -270,7 +271,7 @@ public class Menus implements Listener {
                     gui.nuke();
                     gui.fillEdge(null);
                     gui.setItem(49, gui.createItem(Material.BARRIER, "§cExit", "§7Click to exit the menu."), (event, _) -> event.getWhoClicked().closeInventory());
-                    gui.setItem(48, gui.createItem(Material.ARROW, "§aBack", null), (event, _) -> {
+                    gui.setItem(48, gui.createItem(Material.ARROW, "§aBack"), (event, _) -> {
                         Player player = (Player) event.getWhoClicked();
                         openGUI(player, "main_menu");
                     });
@@ -313,10 +314,21 @@ public class Menus implements Listener {
                 GUI npcCreator = new GUI("§eNPC Creator", 5);
                 npcCreator.setOnCreate((player2, gui) -> {
                     npcCreator.fillInventory(null);
-                    npcCreator.setItem(40, npcCreator.createItem(Material.BARRIER, "§cClose", null), (event, _) -> {
+                    //Special Cases
+                    if (makingNPC.isVillager()) {
+                        npcCreator.setItem(12, npcCreator.createItem(Material.LECTERN, "§eSelect Villager Type", "§7Select the type of villager that the NPC will be."), (event, _) -> {
+                            openGUI((Player)event.getWhoClicked(), "villager_type_menu");
+                        });
+                    }
+                    if (makingNPC.isMannequin()) {
+                        npcCreator.setItem(12, npcCreator.createItem(Material.ARMOR_STAND, "§eSet Mannequin Skin", "§7Set the skin for the mannequin."), (event, _) -> {
+                            openGUI((Player)event.getWhoClicked(), "mannequin_skin_menu");
+                        });
+                    }
+                    npcCreator.setItem(40, npcCreator.createItem(Material.BARRIER, "§cClose"), (event, _) -> {
                         event.getWhoClicked().closeInventory();
                     });
-                    npcCreator.setItem(39, npcCreator.createItem(Material.ARROW, "§aBack", null), (event, _) -> {
+                    npcCreator.setItem(39, npcCreator.createItem(Material.ARROW, "§aBack"), (event, _) -> {
                         openGUI((Player)event.getWhoClicked(), "main_menu");
                     });
                     npcCreator.setItem(25, makingNPC.getNPCEgg(), null);
@@ -410,7 +422,7 @@ public class Menus implements Listener {
                 GUI npcEditor = new GUI("§eNPC Editor", 5);
                 npcEditor.setOnCreate((player2, gui) -> {
                     npcEditor.fillInventory(null);
-                    npcEditor.setItem(40, npcEditor.createItem(Material.BARRIER, "§cClose", null), (event, _) -> {
+                    npcEditor.setItem(40, npcEditor.createItem(Material.BARRIER, "§cClose"), (event, _) -> {
                         event.getWhoClicked().closeInventory();
                     });
 //                    npcEditor.setItem(25, npcEditor.createItem(Material.VILLAGER_SPAWN_EGG, "§aYour NPC", null), null);
@@ -490,6 +502,110 @@ public class Menus implements Listener {
                     });
                 });
                 guis.put("npc_editor", npcEditor);
+            }
+            // Villager Type Selector
+            {
+                GUI villagerTypeSelector = new GUI("§3Select Villager Type", 5); // 15 professoins
+                villagerTypeSelector.fillInventory(null);
+                villagerTypeSelector.setItem(40, villagerTypeSelector.createItem(Material.ARROW, "§aBack"),  (event, _) -> {
+                    openGUI((Player)event.getWhoClicked(), "npc_creator");
+                });
+                villagerTypeSelector.setItem(10, villagerTypeSelector.createItem(Material.LECTERN, "§6Librarian"),  (event, _) -> {
+                    makingNPC.setVillagerProfession(Villager.Profession.LIBRARIAN);
+                    AdminUtilities.sendMessage((Player)event.getWhoClicked(), "Set NPC profession to librarian.");
+                });
+                villagerTypeSelector.setItem(11, villagerTypeSelector.createItem(Material.BLAST_FURNACE, "§6Armorer"), (event, _) -> {
+                    makingNPC.setVillagerProfession(Villager.Profession.ARMORER);
+                    AdminUtilities.sendMessage((Player)event.getWhoClicked(), "Set NPC profession to armorer.");
+                });
+
+                villagerTypeSelector.setItem(12, villagerTypeSelector.createItem(Material.SMOKER, "§6Butcher"), (event, _) -> {
+                    makingNPC.setVillagerProfession(Villager.Profession.BUTCHER);
+                    AdminUtilities.sendMessage((Player)event.getWhoClicked(), "Set NPC profession to butcher.");
+                });
+
+                villagerTypeSelector.setItem(13, villagerTypeSelector.createItem(Material.CARTOGRAPHY_TABLE, "§6Cartographer"), (event, _) -> {
+                    makingNPC.setVillagerProfession(Villager.Profession.CARTOGRAPHER);
+                    AdminUtilities.sendMessage((Player)event.getWhoClicked(), "Set NPC profession to cartographer.");
+                });
+
+                villagerTypeSelector.setItem(14, villagerTypeSelector.createItem(Material.BREWING_STAND, "§6Cleric"), (event, _) -> {
+                    makingNPC.setVillagerProfession(Villager.Profession.CLERIC);
+                    AdminUtilities.sendMessage((Player)event.getWhoClicked(), "Set NPC profession to cleric.");
+                });
+
+                villagerTypeSelector.setItem(15, villagerTypeSelector.createItem(Material.COMPOSTER, "§6Farmer"), (event, _) -> {
+                    makingNPC.setVillagerProfession(Villager.Profession.FARMER);
+                    AdminUtilities.sendMessage((Player)event.getWhoClicked(), "Set NPC profession to farmer.");
+                });
+
+                villagerTypeSelector.setItem(16, villagerTypeSelector.createItem(Material.BARREL, "§6Fisherman"), (event, _) -> {
+                    makingNPC.setVillagerProfession(Villager.Profession.FISHERMAN);
+                    AdminUtilities.sendMessage((Player)event.getWhoClicked(), "Set NPC profession to fisherman.");
+                });
+
+                villagerTypeSelector.setItem(19, villagerTypeSelector.createItem(Material.FLETCHING_TABLE, "§6Fletcher"), (event, _) -> {
+                    makingNPC.setVillagerProfession(Villager.Profession.FLETCHER);
+                    AdminUtilities.sendMessage((Player)event.getWhoClicked(), "Set NPC profession to fletcher.");
+                });
+
+                villagerTypeSelector.setItem(20, villagerTypeSelector.createItem(Material.CAULDRON, "§6Leatherworker"), (event, _) -> {
+                    makingNPC.setVillagerProfession(Villager.Profession.LEATHERWORKER);
+                    AdminUtilities.sendMessage((Player)event.getWhoClicked(), "Set NPC profession to leatherworker.");
+                });
+
+                villagerTypeSelector.setItem(21, villagerTypeSelector.createItem(Material.STONECUTTER, "§6Mason"), (event, _) -> {
+                    makingNPC.setVillagerProfession(Villager.Profession.MASON);
+                    AdminUtilities.sendMessage((Player)event.getWhoClicked(), "Set NPC profession to mason.");
+                });
+
+                villagerTypeSelector.setItem(22, villagerTypeSelector.createItem(Material.LOOM, "§6Shepherd"), (event, _) -> {
+                    makingNPC.setVillagerProfession(Villager.Profession.SHEPHERD);
+                    AdminUtilities.sendMessage((Player)event.getWhoClicked(), "Set NPC profession to shepherd.");
+                });
+
+                villagerTypeSelector.setItem(23, villagerTypeSelector.createItem(Material.SMITHING_TABLE, "§6Toolsmith"), (event, _) -> {
+                    makingNPC.setVillagerProfession(Villager.Profession.TOOLSMITH);
+                    AdminUtilities.sendMessage((Player)event.getWhoClicked(), "Set NPC profession to toolsmith.");
+                });
+
+                villagerTypeSelector.setItem(24, villagerTypeSelector.createItem(Material.GRINDSTONE, "§6Weaponsmith"), (event, _) -> {
+                    makingNPC.setVillagerProfession(Villager.Profession.WEAPONSMITH);
+                    AdminUtilities.sendMessage((Player)event.getWhoClicked(), "Set NPC profession to weaponsmith.");
+                });
+
+                villagerTypeSelector.setItem(25, villagerTypeSelector.createItem(Material.GREEN_WOOL, "§6Nitwit"), (event, _) -> {
+                    makingNPC.setVillagerProfession(Villager.Profession.NITWIT);
+                    AdminUtilities.sendMessage((Player)event.getWhoClicked(), "Set NPC profession to nitwit.");
+                });
+                villagerTypeSelector.setItem(28, villagerTypeSelector.createItem(Material.BARRIER, "§6None"), (event, _) -> {
+                    makingNPC.setVillagerProfession(Villager.Profession.NONE);
+                    AdminUtilities.sendMessage((Player)event.getWhoClicked(), "Set NPC profession to none.");
+                });
+                guis.put("villager_type_selector", villagerTypeSelector);
+            }
+
+            // Mannequin skin menu
+            {
+                GUI mannequinSkinMenu = new GUI("§3Set Mannequin Skin", 1);
+                mannequinSkinMenu.fillInventory(null);
+                mannequinSkinMenu.setItem(0, mannequinSkinMenu.createItem(Material.ARROW, "§aBack"), (event, gui) -> {
+                    openGUI((Player)event.getWhoClicked(), "npc_maker");
+                });
+                mannequinSkinMenu.setItem(3, mannequinSkinMenu.createItem(Material.COMPASS, "§eSet Skin With URL"), (event, _) -> {
+                    //url code
+                });
+                mannequinSkinMenu.setItem(5, mannequinSkinMenu.createItem(Material.NAME_TAG, "§eSet Skin With Username"), (event, _) -> {
+                    //username code
+                    Player player = (Player)event.getWhoClicked();
+                    player.closeInventory();
+                    player.sendTitle("§aInput", "§7Enter the username in chat.", 5, 80, 5);
+                    awaitingInput.put(player.getUniqueId(), input ->{
+                        makingNPC.setSkin(input, player);
+                        openGUI(player, "npc_maker");
+                    });
+                });
+                guis.put("mannequin_skin_menu", mannequinSkinMenu);
             }
         }
 

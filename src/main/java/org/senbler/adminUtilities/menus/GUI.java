@@ -46,6 +46,9 @@ public class GUI {
         item.setItemMeta(meta);
         return item;
     }
+    public ItemStack createItem(Material material, String name) {
+        return createItem(material, name, (String[]) null);
+    }
     public ItemStack createItem(Material material, int amount, String name, String... lore) {
         ItemStack item = new ItemStack(material, amount);
         ItemMeta meta = item.getItemMeta();

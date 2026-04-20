@@ -44,23 +44,6 @@ public class npc {
 
     }
 
-//    public void spawnNPC(Player p) {
-//        Location loc = p.getLocation();
-//        entity = loc.getWorld().spawnEntity(loc, mobType);
-//
-//        entity.setCustomName(this.name);
-//        entity.setCustomNameVisible(true);
-//        entity.setMetadata("npc", new FixedMetadataValue(AdminUtilities.getPlugin(), true));
-//        if (entity instanceof LivingEntity living) {
-//            living.setInvulnerable(true);
-//            living.setAI(false);
-//            living.setRemoveWhenFarAway(false);
-//            living.setPersistent(true);
-//            living.setSilent(true);
-//
-//        }
-//        this.location = entity.getLocation();
-//    }
     public void spawnNPC(Player p) {
         spawnAt(p.getLocation());
     }
@@ -232,13 +215,25 @@ public class npc {
         return false;
     }
 
-    public void setSkin (String skinUsername) {
+    public void setSkin (String skinUsername, Player p) {
         if (!isMannequin()) {
-            throw new IllegalStateException("Mannequin has not been set");
+            throw new IllegalStateException("The entity is not a mannequin.");
+        }
+        Player player = Bukkit.getPlayer(skinUsername);
+        if (player == null) {
+            AdminUtilities.sendMessage(p, skinUsername + " is not a valid player name.");
+            return;
         }
         Mannequin mannequin = (Mannequin) entity;
         PlayerProfile profile = Bukkit.createPlayerProfile(skinUsername);
         mannequin.setProfile(ResolvableProfile.resolvableProfile((com.destroystokyo.paper.profile.PlayerProfile) profile));
+    }
+    public void setVillagerProfession (Villager.Profession profession) {
+        if (!isVillager()) {
+            return;
+        }
+        Villager villager = (Villager) entity;
+        villager.setProfession(profession);
     }
 
     @Override

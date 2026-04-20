@@ -15,6 +15,7 @@ import java.util.ArrayList;
 public final class AdminUtilities extends JavaPlugin {
 
     private static Plugin plugin;
+    private static final String prefix = "§7[§cAdmin Utilities§7]";
 
     @Override
     public void onEnable() {
@@ -58,7 +59,7 @@ public final class AdminUtilities extends JavaPlugin {
     }
 
     public static void sendMessage(Player player, String message) {
-        final String prefix = "§7[§cAdmin Utilities§7]";
+
         message = prefix + " " + message;
         player.sendMessage(message);
     }
